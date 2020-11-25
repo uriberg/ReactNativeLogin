@@ -1,6 +1,5 @@
 import * as React from 'react';
-import {useState} from 'react';
-import {Button, FlatList, View, Text, SafeAreaView} from 'react-native';
+import {Button} from 'react-native';
 import auth from '@react-native-firebase/auth';
 import { LoginManager, AccessToken } from 'react-native-fbsdk';
 

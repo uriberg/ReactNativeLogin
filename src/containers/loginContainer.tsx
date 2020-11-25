@@ -1,11 +1,10 @@
 import * as React from 'react';
-import {Text, TouchableOpacity, View, StyleSheet} from 'react-native';
+import {Text, TouchableOpacity, View, StyleSheet, Alert, Dimensions, ScrollView, SafeAreaView} from 'react-native';
 import {connect} from 'react-redux';
 import * as actions from '../../store/actions/index';
 import SocialLogIn from '../components/socialLogin';
 import EmailPasswordLogin from '../components/emailPasswordLogin';
 import auth from '@react-native-firebase/auth';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
 
 interface PropsFromDispatch {
   onRegisterEmployee: (first_name, last_name, email) => void,
@@ -23,12 +22,59 @@ interface PropsFromState {
 
 type AllProps = PropsFromDispatch & PropsFromState;
 
-class LoginContainer extends React.Component<AllProps> {
-  componentDidMount(): void {
+interface State {
+  orientation: string
+}
 
+class LoginContainer extends React.Component<AllProps, State> {
+
+  constructor(props: AllProps) {
+    super(props);
+
+    const isPortrait = () => {
+      const dim = Dimensions.get('window');
+      return dim.height >= dim.width ? 'portrait' : 'landscape';
+    };
+
+    this.state = {
+      orientation: isPortrait() ? 'portrait' : 'landscape',
+    };
+
+    Dimensions.addEventListener('change', () => {
+      console.log('orientation move');
+      this.setState({
+        orientation: isPortrait(),
+      });
+      console.log(isPortrait());
+    });
   }
 
+  validateLogin = (email, password) => {
+    if (email.length == 0 || password.length == 0) {
+      Alert.alert('Wrong Input!', 'Username or password field cannot be empty.', [
+        {text: 'Okay'},
+      ]);
+      return false;
+    } else {
+      return true;
+    }
+  };
+
+  validateRegister = (email, password, first_name, last_name) => {
+    if (email.length == 0 || password.length == 0 || first_name.length == 0 || last_name.length == 0) {
+      Alert.alert('Wrong Input!', 'Username/password/first name/last name field cannot be empty.', [
+        {text: 'Okay'},
+      ]);
+      return false;
+    } else {
+      return true;
+    }
+  };
+
   createUser = (email, password, first_name, last_name) => {
+    if (!this.validateRegister(email, password, first_name, last_name)) {
+      return;
+    }
     auth()
       .createUserWithEmailAndPassword(email, password)
       .then((data) => {
@@ -51,6 +97,9 @@ class LoginContainer extends React.Component<AllProps> {
   };
 
   login = (email, password) => {
+    if (!this.validateLogin(email, password)) {
+      return;
+    }
     auth()
       .signInWithEmailAndPassword(email, password)
       .then(() => {
@@ -89,35 +138,48 @@ class LoginContainer extends React.Component<AllProps> {
   };
 
   socialLogin = (email) => {
-    //this.props.onRegisterEmployee(first_name, last_name, email);
     this.props.setIsLoggedIn(true);
     this.props.getEmployees();
     this.props.checkIfAdmin(email);
   };
 
   render() {
-    return (
-      <View style={!this.props.isLoggedIn ? styles.loginContainer : {}}>
-        {!this.props.isLoggedIn ?
-          <View style={styles.socialLoginWrapper}>
-            <SocialLogIn register={this.register} socialLogin={this.socialLogin} loginMode={this.props.loginMode}/>
-            <Text style={styles.centerAndSpaceText}>Or</Text>
-          </View>
-          : null}
-        <EmailPasswordLogin createUser={this.createUser} login={this.login} logoff={this.logoff}
-                            loginMode={this.props.loginMode}/>
-        {!this.props.isLoggedIn ? <View>
-          {!this.props.loginMode ?
-            <TouchableOpacity onPress={() => this.props.setLoginMode(true)}>
-              <Text style={styles.centerAndSpaceText}>Already a member? Log in</Text></TouchableOpacity> :
-            <TouchableOpacity onPress={() => this.props.setLoginMode(false)}>
-              <Text style={styles.centerAndSpaceText}>
-                not a member? back to sign up
-              </Text>
-            </TouchableOpacity>}
-        </View> : null}
-      </View>
-    );
+    const containerBody =  <View style={!this.props.isLoggedIn ? styles.loginContainerPortrait :
+      {}}>
+      {!this.props.isLoggedIn ?
+        <View style={styles.socialLoginWrapper}>
+          <SocialLogIn register={this.register} socialLogin={this.socialLogin} loginMode={this.props.loginMode}/>
+          <Text style={styles.centerAndSpaceText}>Or</Text>
+        </View>
+        : null}
+      <EmailPasswordLogin createUser={this.createUser} login={this.login} logoff={this.logoff}
+                          loginMode={this.props.loginMode}/>
+      {!this.props.isLoggedIn ? <View>
+        {!this.props.loginMode ?
+          <TouchableOpacity onPress={() => this.props.setLoginMode(true)}>
+            <Text style={styles.centerAndSpaceText}>Already a member? Log in</Text></TouchableOpacity> :
+          <TouchableOpacity onPress={() => this.props.setLoginMode(false)}>
+            <Text style={styles.centerAndSpaceText}>
+              not a member? back to sign up
+            </Text>
+          </TouchableOpacity>}
+      </View> : null}
+    </View>;
+
+    if (this.state.orientation === 'landscape' && !this.props.isLoggedIn){
+      return (
+        <ScrollView>
+          {containerBody}
+        </ScrollView>
+      );
+    }
+      else {
+        return (
+          <>
+          {containerBody}
+          </>
+        );
+      }
   }
 }
 
@@ -140,7 +202,7 @@ const mapDispatchToProps = (dispatch: any) => {
 };
 
 const styles = StyleSheet.create({
-  loginContainer: {
+  loginContainerPortrait: {
     flex: 1,
     paddingHorizontal: 20,
     justifyContent: 'center',
@@ -151,61 +213,6 @@ const styles = StyleSheet.create({
   },
   socialLoginWrapper: {
     marginBottom: 35,
-  },
-  listContainer: {
-    flex: 1,
-    marginTop: 20,
-    paddingVertical: 5,
-    paddingHorizontal: 20,
-  },
-  listItemWrapper: {
-    marginBottom: 35,
-  },
-  listItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  itemOptions: {
-    flexDirection: 'column',
-  },
-  itemText: {
-    justifyContent: 'space-between',
-  },
-  scrollView: {
-    backgroundColor: Colors.lighter,
-  },
-  engine: {
-    position: 'absolute',
-    right: 0,
-  },
-  body: {
-    backgroundColor: Colors.white,
-  },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
   },
 });
 

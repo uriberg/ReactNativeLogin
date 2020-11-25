@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {useState, useEffect} from 'react';
-import {View, Text, Button, TextInput, TouchableOpacity} from 'react-native';
+import {View, Text, Button, TextInput} from 'react-native';
 import auth from '@react-native-firebase/auth';
 
 interface EmailPasswordLoginProps {
