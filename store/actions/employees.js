@@ -1,5 +1,5 @@
 import * as actionTypes from './actionsTypes';
-import axios from 'axios';
+import axiosInstance from '../../src/axios';
 
 export const setEmployees = (data) => {
   return {
@@ -17,7 +17,7 @@ export const setAdminPermissions = (adminPermissions) => {
 
 export const getEmployees = () => {
   return dispatch => {
-    axios.get('http://10.100.102.6:5000/employees')
+    axiosInstance().get('/employees')
       .then(res => {
         //console.log(res.data);
         dispatch(setEmployees(res.data));
@@ -29,7 +29,7 @@ export const getEmployees = () => {
 
 export const registerEmployee = (first_name, last_name, email) => {
   return dispatch => {
-    axios.post('http://10.100.102.6:5000/employees', {first_name, last_name, email})
+    axiosInstance().post('/employees', {first_name, last_name, email})
       .then(() => {
         // console.log('from post after register', res.data);
         // let employees = getState().employees.employeesData;
@@ -43,7 +43,7 @@ export const registerEmployee = (first_name, last_name, email) => {
 
 export const checkIfAdmin = (id) => {
   return dispatch => {
-    axios.get('http://10.100.102.6:5000/employees/' + id)
+    axiosInstance().get('/employees/' + id)
       .then(res => {
         console.log('result of check ', res.data);
         dispatch(setAdminPermissions(res.data));
