@@ -41,7 +41,7 @@ const EmailPasswordLogin = (props: EmailPasswordLoginProps) => {
       <View>
         <View>
           <View>
-            <Text>Enter your email:</Text>
+            <Text>Enter your email: </Text>
             <TextInput
               value={email}
               onChangeText={(email) => setEmail(email)}
