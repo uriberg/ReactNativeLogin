@@ -15,9 +15,8 @@ import {Colors} from 'react-native/Libraries/NewAppScreen';
 
 const Item = ({email, first_name, last_name}) => (
   <View style={styles.itemText}>
-    <Text>{email}</Text>
-    <Text>{first_name}</Text>
-    <Text>{last_name}</Text>
+    <Text>{first_name} {last_name}</Text>
+    <Text style={styles.subheading}>{email}</Text>
   </View>
 );
 
@@ -53,19 +52,31 @@ const EmployeesList = (props: EmployeesListProps) => {
     }
   };
 
+  const renderSeparator = () => {
+    return <View style={styles.itemSeparator}></View>;
+  };
+
+  const renderHeader = () => {
+    return (
+        <View>
+          <Text style={styles.header}>Employees</Text>
+        </View>
+    );
+  };
+
   const renderItem = ({item}) => (
     <TouchableHighlight onPress={() => {
       setIsModalVisible(true);
       setInputFirstName(item.first_name);
       setEditedItem(item.email);
     }}
-                        underlayColor={'#f1f1f1'} style={styles.listItemWrapper}>
+                        underlayColor={'#f1f1f1'}>
       <View style={styles.listItem}>
         <Item email={item.email} first_name={item.first_name} last_name={item.last_name} key={item.email}/>
         <View  style={styles.itemOptions}>
           {props.adminPermissions ? <Button title="Delete" onPress={() => props.deleteEmployee(item.email)}/> : null}
           <View>
-            <View>
+            <View style={{marginVertical: 5}}>
               {props.adminPermissions && !editMode ?
 
                 <Button title="Edit employee" onPress={() => {
@@ -74,7 +85,7 @@ const EmployeesList = (props: EmployeesListProps) => {
                   setInputLastName(item.last_name);
                   setEditedItem(item.email);
                 }}/> : null}</View>
-            <View>
+            <View >
               {editMode ? <Button title="Update employee" onPress={() => {
                 setEditMode(false);
                 props.deleteEmployee(item.email);
@@ -91,6 +102,8 @@ const EmployeesList = (props: EmployeesListProps) => {
         data={props.employeesData}
         renderItem={renderItem}
         keyExtractor={item => item.email}
+        ItemSeparatorComponent={renderSeparator}
+        ListHeaderComponent={renderHeader}
         contentContainerStyle={{
           flexGrow: 1,
         }}/>
@@ -135,28 +148,47 @@ const EmployeesList = (props: EmployeesListProps) => {
 const styles = StyleSheet.create({
   listContainer: {
     flex: 1,
-    marginTop: 20,
-    paddingVertical: 5,
+    paddingVertical: 10,
     paddingHorizontal: 20,
-  },
-  listItemWrapper: {
-    marginBottom: 35
+    zIndex: 5,
+    backgroundColor: "white"
   },
   listItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 10
   },
   itemOptions: {
     flexDirection: 'column',
+    justifyContent: 'center'
   },
   itemText: {
-    justifyContent: 'space-between'
+    justifyContent: 'center',
+    maxWidth: 150
   },
   modalView: {
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1
-  }
+  },
+  itemSeparator: {
+    backgroundColor: 'green',
+    height: 1,
+  },
+  header: {
+    fontSize: 30,
+    paddingVertical: 15,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    backgroundColor: '#DCDCDC',
+  },
+  heading2: {
+    fontSize: 18,
+  },
+  subheading: {
+    color: 'grey',
+  },
 });
 
 export default EmployeesList;
